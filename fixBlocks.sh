@@ -1,4 +1,7 @@
 #!/bin/bash
+
+#info @ EOF
+
 block=$(smartctl --all /dev/sda | grep 'Short offline' | grep '# 1' | awk '{print $10}')
 echo "Fixing: " $block
 
@@ -31,6 +34,8 @@ exit 0
 
 #######
 
+SRC: https://linoxide.com/linux-how-to/how-to-fix-repair-bad-blocks-in-linux/
+
 bc 1.07.1
 Copyright 1991-1994, 1997, 1998, 2000, 2004, 2006, 2008, 2012-2017 Free Software Foundation, Inc.
 This is free software with ABSOLUTELY NO WARRANTY.
@@ -53,4 +58,3 @@ l=128153
 l=484030
 ((l-s)*512)/b
 60247
-
