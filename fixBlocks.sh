@@ -1,6 +1,11 @@
 #!/bin/bash
 
 #info @ EOF
+#Скриптец проходится по ошибкам на диске и затирает их ddшкой.
+#ACHTUNG! данные на диске могут быть утеряны!
+#Написано для диска sda с одним разделом sda1 на весь диск
+
+DISK="/dev/sda"
 
 block=$(smartctl --all /dev/sda | grep 'Short offline' | grep '# 1' | awk '{print $10}')
 echo "Fixing: " $block
