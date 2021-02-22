@@ -3,11 +3,11 @@
 #info @ EOF
 #Скриптец проходится по ошибкам на диске и затирает их ddшкой.
 #ACHTUNG! данные на диске могут быть утеряны!
-#Написано для диска sda с одним разделом sda1 на весь диск
+#Написано для диска sdba с одним разделом sdb1 на весь диск
 
-DISK="/dev/sda"
+DISK="/dev/sdb"
 
-block=$(smartctl --all /dev/sda | grep 'Short offline' | grep '# 1' | awk '{print $10}')
+block=$(smartctl --all $DISK | grep 'Short offline' | grep '# 1' | awk '{print $10}')
 echo "Fixing: " $block
 
 calcForm="(($block-2048)*512)/4096"
@@ -16,24 +16,24 @@ ddblock=$(echo $calcForm | bc)
 
 #echo '(($block-2048)*512)/4096'
 
-echo "for dd: " $ddblock
-dd if=/dev/random of=/dev/sda1 bs=4096 count=1 seek=$block
+echo "seek (dd): " $ddblock
+dd if=/dev/random of=$DISK'1' bs=4096 count=1 seek=$block
 echo ""
 
 let ddblock+=1
-echo "for dd: " $ddblock
-dd if=/dev/random of=/dev/sda1 bs=4096 count=1 seek=$block
+echo "seek (dd): " $ddblock
+dd if=/dev/random of=$DISK'1' bs=4096 count=1 seek=$block
 echo ""
 
 let ddblock-=2
-echo "for dd: " $ddblock
-dd if=/dev/random of=/dev/sda1 bs=4096 count=1 seek=$block
+echo "seek (dd): " $ddblock
+dd if=/dev/random of=$DISK'1' bs=4096 count=1 seek=$block
 echo ""
 
-smartctl -t short /dev/sda -q errorsonly
+smartctl -t short $DISK -q errorsonly
 sleep 10
 echo "New badblock: "
-smartctl --all /dev/sda | grep 'Short offline' | grep '# 1' | awk '{print $10}'
+smartctl --all $DISK | grep 'Short offline' | grep '# 1' | awk '{print $10}'
 
 exit 0
 
