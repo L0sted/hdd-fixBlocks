@@ -5,35 +5,25 @@
 #ACHTUNG! данные на диске могут быть утеряны!
 #Написано для диска sdba с одним разделом sdb1 на весь диск
 
-DISK="/dev/sdb"
+DISK="/dev/sda"
 
-block=$(smartctl --all $DISK | grep 'Short offline' | grep '# 1' | awk '{print $10}')
+block=$(sudo smartctl --all $DISK | grep 'Short offline' | head -1 | awk '{print $10}')
 echo "Fixing: " $block
 
-calcForm="(($block-2048)*512)/4096"
+sudo hdparm --read-sector $block $DISK 
+sudo hdparm --repair-sector $block --yes-i-know-what-i-am-doing $DISK 
+sudo hdparm --read-sector $block $DISK
 
-ddblock=$(echo $calcForm | bc)
+sudo smartctl -t short $DISK -q errorsonly
 
-#echo '(($block-2048)*512)/4096'
+while `sudo smartctl -a $DISK | grep -q 'Self_test_in_progress'`
+do
+	sleep 1
+done
 
-echo "seek (dd): " $ddblock
-dd if=/dev/random of=$DISK'1' bs=4096 count=1 seek=$block
-echo ""
-
-let ddblock+=1
-echo "seek (dd): " $ddblock
-dd if=/dev/random of=$DISK'1' bs=4096 count=1 seek=$block
-echo ""
-
-let ddblock-=2
-echo "seek (dd): " $ddblock
-dd if=/dev/random of=$DISK'1' bs=4096 count=1 seek=$block
-echo ""
-
-smartctl -t short $DISK -q errorsonly
-sleep 10
+sleep 20
 echo "New badblock: "
-smartctl --all $DISK | grep 'Short offline' | grep '# 1' | awk '{print $10}'
+sudo smartctl --all $DISK | grep 'Short offline' | grep '# 1' | awk '{print $10}'
 
 exit 0
 
