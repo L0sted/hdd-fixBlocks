@@ -8,6 +8,9 @@
 DISK="/dev/sda"
 
 block=$(sudo smartctl --all $DISK | grep 'Short offline' | head -1 | awk '{print $10}')
+
+[ -z $block ] && print 'no bad blocks!' && exit 0
+
 echo "Fixing: " $block
 
 sudo hdparm --read-sector $block $DISK 
@@ -15,7 +18,7 @@ sudo hdparm --repair-sector $block --yes-i-know-what-i-am-doing $DISK
 sudo hdparm --read-sector $block $DISK
 
 sudo smartctl -t short $DISK -q errorsonly
-
+date
 while `sudo smartctl -a $DISK | grep -q 'Self_test_in_progress'`
 do
 	sleep 1
